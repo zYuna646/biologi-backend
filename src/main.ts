@@ -17,10 +17,12 @@ async function bootstrap() {
   // Swagger Configuration
   const config = new DocumentBuilder()
     .setTitle('Biologi Backend API')
-    .setDescription('API untuk aplikasi biologi dengan sistem user dan scoring')
+    .setDescription('API untuk aplikasi biologi dengan sistem user, scoring, dan quiz')
     .setVersion('1.0')
     .addTag('users', 'Operasi CRUD untuk User')
     .addTag('scores', 'Operasi CRUD untuk Score dan Leaderboard')
+    .addTag('questions', 'Operasi untuk mengelola soal-soal kuis')
+    .addTag('quiz', 'Operasi untuk sesi kuis, jawaban, dan history')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

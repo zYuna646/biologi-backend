@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ScoresModule } from './scores/scores.module';
+import { QuestionsModule } from './questions/questions.module';
+import { QuizModule } from './quiz/quiz.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { ScoresModule } from './scores/scores.module';
     }),
     UsersModule,
     ScoresModule,
+    QuestionsModule,
+    QuizModule,
   ],
   controllers: [AppController],
   providers: [AppService],
