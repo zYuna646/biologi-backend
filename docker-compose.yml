@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: biologi-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: biologi_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - biologi-network
+
+  backend:
+    build: .
+    container_name: biologi-backend
+    restart: unless-stopped
+    ports:
+      - "3009:3009"
+    environment:
+      PORT: 3009
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: biologi_db
+      NODE_ENV: production
+    depends_on:
+      - postgres
+    networks:
+      - biologi-network
+    volumes:
+      - ./src:/app/src
+      - ./test:/app/test
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.build.json:/app/tsconfig.build.json
+      - ./nest-cli.json:/app/nest-cli.json
+      - /app/node_modules
+      - /app/dist
+
+volumes:
+  postgres_data:
+
+networks:
+  biologi-network:
+    driver: bridge 
