@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ScoresModule } from './scores/scores.module';
+import { QuestionsModule } from './questions/questions.module';
+import { QuizModule } from './quiz/quiz.module';
 
 @Module({
   imports: [
@@ -14,7 +16,7 @@ import { ScoresModule } from './scores/scores.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432', 10),
+      port: parseInt(process.env.DB_PORT || '5433', 10),
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_NAME || 'biologi_db',
@@ -23,6 +25,8 @@ import { ScoresModule } from './scores/scores.module';
     }),
     UsersModule,
     ScoresModule,
+    QuestionsModule,
+    QuizModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,6 +4,9 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
+# Install system dependencies (including PostgreSQL client)
+RUN apk add --no-cache postgresql-client
+
 # Copy package files
 COPY package*.json ./
 
