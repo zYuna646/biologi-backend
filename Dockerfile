@@ -12,7 +12,6 @@ COPY tsconfig*.json ./
 COPY nest-cli.json ./
 COPY src ./src
 COPY assets ./assets
-COPY README.md ./
 RUN npm run build
 
 # Prune dev dependencies to keep production small
