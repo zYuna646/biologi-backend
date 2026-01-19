@@ -120,8 +120,8 @@ export class ScoresService {
       'Nama Siswa': score.user?.name || 'N/A',
       'NISN': score.user?.nisn || 'N/A',
       'Kelas': score.user?.class || 'N/A',
-      'Total Skor': score.total_score,
-      'Quiz ID': score.quiz_session_id,
+      'Total Skor': score.score,
+      'Quiz ID': score.id,
       'Tanggal': moment(score.created_at).format('DD-MM-YYYY HH:mm:ss'),
     }));
 

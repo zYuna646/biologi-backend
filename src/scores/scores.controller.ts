@@ -187,9 +187,9 @@ export class ScoresController {
     },
   })
   async downloadScoresExcel(
+    @Res() res: Response,
     @Query('startDate') startDateStr?: string,
     @Query('endDate') endDateStr?: string,
-    @Res() res: Response,
   ): Promise<void> {
     // Parse dates if provided
     const startDate = startDateStr ? new Date(startDateStr) : undefined;
