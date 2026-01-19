@@ -22,6 +22,9 @@ export class User {
   @Column()
   class: string;
 
+  @Column({ nullable: true, unique: true })
+  nisn: string;
+
   @OneToMany(() => Score, (score) => score.user)
   scores: Score[];
 

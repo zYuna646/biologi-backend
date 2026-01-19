@@ -1,28 +1,20 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, Length } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateUserDto {
-  @ApiPropertyOptional({
-    description: 'Token unik device pengguna',
-    example: 'device_123456789',
-  })
-  @IsString()
+  @ApiPropertyOptional({ description: 'Name of the user' })
   @IsOptional()
-  device_token?: string;
-
-  @ApiPropertyOptional({
-    description: 'Nama lengkap pengguna',
-    example: 'Jane Doe',
-  })
   @IsString()
-  @IsOptional()
   name?: string;
 
-  @ApiPropertyOptional({
-    description: 'Kelas pengguna',
-    example: '10B',
-  })
-  @IsString()
+  @ApiPropertyOptional({ description: 'Class of the user' })
   @IsOptional()
+  @IsString()
   class?: string;
+
+  @ApiPropertyOptional({ description: 'NISN (Nomor Induk Siswa Nasional)' })
+  @IsOptional()
+  @IsString()
+  @Length(10, 10, { message: 'NISN must be exactly 10 characters long' })
+  nisn?: string;
 }

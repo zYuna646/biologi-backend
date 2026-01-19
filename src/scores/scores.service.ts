@@ -4,12 +4,17 @@ import { Repository } from 'typeorm';
 import { Score } from '../entities/score.entity';
 import { CreateScoreDto } from '../dto/create-score.dto';
 import { UpdateScoreDto } from '../dto/update-score.dto';
+import { User } from '../entities/user.entity';
+import * as XLSX from 'xlsx';
+import * as moment from 'moment';
 
 @Injectable()
 export class ScoresService {
   constructor(
     @InjectRepository(Score)
     private scoresRepository: Repository<Score>,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
   ) {}
 
   async create(createScoreDto: CreateScoreDto): Promise<Score> {
@@ -87,5 +92,76 @@ export class ScoresService {
       highest_score: parseInt(item.highest_score),
       total_games: parseInt(item.total_games),
     }));
+  }
+
+  async generateScoresExcel(
+    startDate?: Date, 
+    endDate?: Date
+  ): Promise<Buffer> {
+    // Build query with optional date filtering
+    const queryBuilder = this.scoresRepository
+      .createQueryBuilder('score')
+      .leftJoinAndSelect('score.user', 'user')
+      .orderBy('score.created_at', 'DESC');
+
+    // Apply date filters if provided
+    if (startDate) {
+      queryBuilder.andWhere('score.created_at >= :startDate', { startDate });
+    }
+    if (endDate) {
+      queryBuilder.andWhere('score.created_at <= :endDate', { endDate });
+    }
+
+    // Fetch scores with user details
+    const scores = await queryBuilder.getMany();
+
+    // Transform scores for Excel
+    const excelData = scores.map((score) => ({
+      'Nama Siswa': score.user?.name || 'N/A',
+      'NISN': score.user?.nisn || 'N/A',
+      'Kelas': score.user?.class || 'N/A',
+      'Total Skor': score.total_score,
+      'Quiz ID': score.quiz_session_id,
+      'Tanggal': moment(score.created_at).format('DD-MM-YYYY HH:mm:ss'),
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Create workbook and add worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      workbook, 
+      worksheet, 
+      `Laporan Skor ${moment().format('DDMMYYYY-HHmmss')}`
+    );
+
+    // Generate Excel file buffer
+    const excelBuffer = XLSX.write(workbook, { 
+      type: 'buffer', 
+      bookType: 'xlsx' 
+    });
+
+    return excelBuffer;
+  }
+
+  // Existing method to get scores with optional date filtering
+  async getScores(
+    startDate?: Date, 
+    endDate?: Date
+  ): Promise<Score[]> {
+    const queryBuilder = this.scoresRepository
+      .createQueryBuilder('score')
+      .leftJoinAndSelect('score.user', 'user')
+      .orderBy('score.created_at', 'DESC');
+
+    if (startDate) {
+      queryBuilder.andWhere('score.created_at >= :startDate', { startDate });
+    }
+    if (endDate) {
+      queryBuilder.andWhere('score.created_at <= :endDate', { endDate });
+    }
+
+    return queryBuilder.getMany();
   }
 }

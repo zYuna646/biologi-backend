@@ -8,6 +8,7 @@ import {
   Delete,
   ValidationPipe,
   Query,
+  Res,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,6 +21,9 @@ import {
 import { ScoresService } from './scores.service';
 import { CreateScoreDto } from '../dto/create-score.dto';
 import { UpdateScoreDto } from '../dto/update-score.dto';
+import { Score } from '../entities/score.entity';
+import { Response } from 'express';
+import * as moment from 'moment';
 
 @ApiTags('scores')
 @Controller('scores')
@@ -156,5 +160,83 @@ export class ScoresController {
   })
   remove(@Param('id') id: string) {
     return this.scoresService.remove(+id);
+  }
+
+  @Get('download-excel')
+  @ApiOperation({ summary: 'Download scores as Excel file' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Start date for filtering scores (ISO date string)'
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'End date for filtering scores (ISO date string)'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Excel file with scores',
+    headers: {
+      'Content-Type': {
+        description: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
+      'Content-Disposition': {
+        description: 'attachment; filename="scores_report.xlsx"',
+      },
+    },
+  })
+  async downloadScoresExcel(
+    @Query('startDate') startDateStr?: string,
+    @Query('endDate') endDateStr?: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    // Parse dates if provided
+    const startDate = startDateStr ? new Date(startDateStr) : undefined;
+    const endDate = endDateStr ? new Date(endDateStr) : undefined;
+
+    // Generate Excel buffer
+    const excelBuffer = await this.scoresService.generateScoresExcel(
+      startDate,
+      endDate
+    );
+
+    // Set response headers
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="scores_report_${moment().format('YYYYMMDD_HHmmss')}.xlsx"`,
+      'Content-Length': excelBuffer.length.toString(),
+    });
+
+    // Send Excel file
+    res.send(excelBuffer);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all scores with optional date filtering' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Start date for filtering scores (ISO date string)'
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'End date for filtering scores (ISO date string)'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of scores',
+    type: [Score]
+  })
+  async getScores(
+    @Query('startDate') startDateStr?: string,
+    @Query('endDate') endDateStr?: string,
+  ): Promise<Score[]> {
+    // Parse dates if provided
+    const startDate = startDateStr ? new Date(startDateStr) : undefined;
+    const endDate = endDateStr ? new Date(endDateStr) : undefined;
+
+    return this.scoresService.getScores(startDate, endDate);
   }
 }

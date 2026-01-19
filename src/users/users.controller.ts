@@ -1,23 +1,23 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  ValidationPipe,
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  Patch, 
+  Param, 
+  Delete 
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
+import { 
+  ApiTags, 
+  ApiOperation, 
+  ApiResponse, 
+  ApiBody, 
+  ApiParam 
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { User } from '../entities/user.entity';
 
 @ApiTags('users')
 @Controller('users')
@@ -25,107 +25,84 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Membuat user baru' })
+  @ApiOperation({ summary: 'Create a new user' })
   @ApiBody({ type: CreateUserDto })
-  @ApiResponse({
-    status: 201,
-    description: 'User berhasil dibuat',
+  @ApiResponse({ 
+    status: 201, 
+    description: 'User created successfully', 
+    type: User 
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Data input tidak valid',
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Device token or NISN already in use' 
   })
-  create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.usersService.createUser(createUserDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Mendapatkan semua user' })
-  @ApiResponse({
-    status: 200,
-    description: 'Daftar semua user',
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'List of all users', 
+    type: [User] 
   })
-  findAll() {
+  async findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Mendapatkan user berdasarkan ID' })
-  @ApiParam({
-    name: 'id',
-    description: 'ID user',
-    example: 1,
+  @ApiOperation({ summary: 'Get user by ID' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'User details', 
+    type: User 
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Data user ditemukan',
+  @ApiResponse({ 
+    status: 404, 
+    description: 'User not found' 
   })
-  @ApiResponse({
-    status: 404,
-    description: 'User tidak ditemukan',
-  })
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @Get('device/:device_token')
-  @ApiOperation({ summary: 'Mendapatkan user berdasarkan device token' })
-  @ApiParam({
-    name: 'device_token',
-    description: 'Token device user',
-    example: 'device_123456789',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Data user ditemukan',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'User dengan device token tersebut tidak ditemukan',
-  })
-  findByDeviceToken(@Param('device_token') device_token: string) {
-    return this.usersService.findByDeviceToken(device_token);
+  async findOne(@Param('id') id: number): Promise<User> {
+    return this.usersService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Mengupdate data user' })
-  @ApiParam({
-    name: 'id',
-    description: 'ID user',
-    example: 1,
-  })
+  @ApiOperation({ summary: 'Update user details' })
+  @ApiParam({ name: 'id', description: 'User ID' })
   @ApiBody({ type: UpdateUserDto })
-  @ApiResponse({
-    status: 200,
-    description: 'User berhasil diupdate',
+  @ApiResponse({ 
+    status: 200, 
+    description: 'User updated successfully', 
+    type: User 
   })
-  @ApiResponse({
-    status: 404,
-    description: 'User tidak ditemukan',
+  @ApiResponse({ 
+    status: 404, 
+    description: 'User not found' 
   })
-  update(
-    @Param('id') id: string,
-    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
-  ) {
-    return this.usersService.update(+id, updateUserDto);
+  @ApiResponse({ 
+    status: 409, 
+    description: 'NISN already in use' 
+  })
+  async updateUser(
+    @Param('id') id: number, 
+    @Body() updateUserDto: UpdateUserDto
+  ): Promise<User> {
+    return this.usersService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Menghapus user' })
-  @ApiParam({
-    name: 'id',
-    description: 'ID user',
-    example: 1,
+  @ApiOperation({ summary: 'Delete a user' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'User deleted successfully' 
   })
-  @ApiResponse({
-    status: 200,
-    description: 'User berhasil dihapus',
+  @ApiResponse({ 
+    status: 404, 
+    description: 'User not found' 
   })
-  @ApiResponse({
-    status: 404,
-    description: 'User tidak ditemukan',
-  })
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  async remove(@Param('id') id: number): Promise<void> {
+    return this.usersService.remove(id);
   }
 }
